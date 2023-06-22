@@ -1,42 +1,84 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react'
 import {
   ChakraProvider,
   Box,
-  Text,
-  Link,
-  VStack,
-  Code,
-  Grid,
   theme,
-} from '@chakra-ui/react';
-import { ColorModeSwitcher } from './ColorModeSwitcher';
-import { Logo } from './Logo';
+  Grid,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Heading,
+  TableContainer,
+  Text,
+} from '@chakra-ui/react'
 
 function App() {
+  const springHost = 'http://localhost:8080'
+  const endpoint = '/api/holidays/'
+  const id = 'klm012345'
+  const [holidays, setHolidays] = useState()
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    // declare the async data fetching function
+    const fetchData = async () => {
+      // get the data from the api
+      const response = await fetch(springHost + endpoint + id)
+      // convert the data to json
+      const json = await response.json()
+
+      // set state with the result
+      setHolidays(json)
+    }
+
+    setLoading(true)
+    // call the function
+    fetchData()
+      // make sure to catch any error
+      .catch(console.error)
+    setLoading(false)
+  }, [])
+
   return (
     <ChakraProvider theme={theme}>
-      <Box textAlign="center" fontSize="xl">
-        <Grid minH="100vh" p={3}>
-          <ColorModeSwitcher justifySelf="flex-end" />
-          <VStack spacing={8}>
-            <Logo h="40vmin" pointerEvents="none" />
-            <Text>
-              Edit <Code fontSize="xl">src/App.js</Code> and save to reload.
-            </Text>
-            <Link
-              color="teal.500"
-              href="https://chakra-ui.com"
-              fontSize="2xl"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learn Chakra
-            </Link>
-          </VStack>
+      <Box>
+        <Grid>
+          {loading && <Text>Loading...</Text>}
+          {holidays && (
+            <>
+              <Heading as='h2'>Holidays sample of {holidays[0].employeeId}</Heading><TableContainer>
+                <Table variant="simple">
+                  <Thead>
+                    <Tr>
+                      <Th>Holiday label</Th>
+                      <Th>Start date</Th>
+                      <Th>End date</Th>
+                      <Th>Status</Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {holidays.map((holiday) => {
+                      return(
+                        <Tr key={holiday.holidayId}>
+                          <Td>{holiday.holidayLabel}</Td>
+                          <Td>{holiday.startOfHoliday}</Td>
+                          <Td>{holiday.endOfHoliday}</Td>
+                          <Td>{holiday.status}</Td>
+                        </Tr>
+                      )
+                    })}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+            </>
+          )}
         </Grid>
       </Box>
     </ChakraProvider>
-  );
+  )
 }
 
-export default App;
+export default App
